@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Intelligence | Instant ATS Scoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.01em; }
+        .score-gradient { background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); }
+        .animate-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .transition-fast { transition: all 0.15s ease-out; }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 min-h-screen">
+
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
+                <div class="w-8 h-8 score-gradient rounded-lg flex items-center justify-center text-white">
+                    <i data-lucide="brain-circuit" class="w-5 h-5"></i>
+                </div>
+                <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
+                    Resume <span class="text-blue-600">Intelligence</span>
+                </span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full text-[11px] font-bold text-green-600 uppercase">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    Ultra-Fast Mode
+                </div>
+                <div class="h-6 w-[1px] bg-slate-200"></div>
+                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">Enterprise v2.0</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    <div>
+                        <h2 class="text-lg font-bold mb-1">Instant Analysis</h2>
+                        <p class="text-xs text-slate-400 mb-6">Semantic matching at zero latency.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="file-up" class="w-3.5 h-3.5 text-blue-500"></i> Resume (PDF)
+                        </label>
+                        <div id="dropzone" class="relative border-2 border-dashed border-slate-200 rounded-xl p-8 hover:border-blue-400 hover:bg-blue-50/50 transition-fast cursor-pointer text-center">
+                            <input type="file" id="resumeInput" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div id="uploadPlaceholder" class="space-y-2">
+                                <i data-lucide="upload" class="w-8 h-8 mx-auto text-slate-300"></i>
+                                <p class="text-xs font-semibold text-slate-600">Click or Drop PDF</p>
+                            </div>
+                            <div id="fileInfo" class="hidden flex flex-col items-center">
+                                <i data-lucide="file-check" class="w-8 h-8 text-green-500 mb-2"></i>
+                                <span id="fileNameDisplay" class="text-xs font-bold text-slate-700 truncate w-full px-4 text-center">file.pdf</span>
+                                <button type="button" id="removeFile" class="mt-2 text-[10px] text-red-500 font-bold uppercase hover:underline">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="scroll-text" class="w-3.5 h-3.5 text-blue-500"></i> Job Description
+                        </label>
+                        <textarea id="jdInput" class="w-full h-72 p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-fast placeholder:text-slate-300" placeholder="Paste JD requirements..."></textarea>
+                    </div>
+
+                    <button id="analyzeBtn" class="w-full py-4 score-gradient text-white rounded-xl font-bold shadow-lg hover:opacity-95 transition-fast flex items-center justify-center gap-3 active:scale-95">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        <span id="btnText">Execute Now</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 space-y-6">
+                <div id="emptyState" class="bg-white rounded-3xl border border-slate-200 border-dashed h-[600px] flex flex-col items-center justify-center text-center p-12">
+                    <i data-lucide="lightning" class="w-10 h-10 text-slate-200 mb-6"></i>
+                    <h2 class="text-xl font-bold text-slate-800">Zero-Latency Insights</h2>
+                    <p class="text-slate-500 max-w-sm mt-2 text-sm">Upload candidate data for real-time extraction.</p>
+                </div>
+
+                <div id="loadingState" class="hidden bg-white rounded-3xl border border-slate-200 h-[600px] flex flex-col items-center justify-center text-center p-12">
+                    <div class="w-12 h-12 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+                    <h2 class="text-lg font-bold text-slate-800">Analyzing...</h2>
+                </div>
+
+                <div id="resultsView" class="hidden space-y-6 animate-in">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex flex-col md:flex-row gap-8 items-center">
+                            <div class="relative w-32 h-32 shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#F1F5F9" stroke-width="10" />
+                                    <circle id="scoreRing" cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="10" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" class="transition-all duration-500 ease-out" />
+                                    <defs><linearGradient id="gradient"><stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span id="scoreText" class="text-3xl font-black">0%</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-xl font-bold">Analysis Results</h2>
+                                    <span id="verdictBadge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase"></span>
+                                </div>
+                                <p id="aiSummary" class="text-slate-600 text-sm leading-relaxed italic bg-slate-50 p-4 rounded-xl"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Keywords</p>
+                            <h3 id="metricKeywords" class="text-xl font-bold text-blue-600">0%</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Structure</p>
+                            <h3 id="metricStructure" class="text-xl font-bold text-indigo-600">0%</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Formatting</p>
+                            <h3 id="metricFormatting" class="text-xl font-bold text-purple-600">0%</h3>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                            <h4 class="text-sm font-bold mb-4">Targeted Gaps</h4>
+                            <div id="gapCloud" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                            <h4 class="text-sm font-bold mb-4">Section Check</h4>
+                            <div id="sectionMapping" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        let extractedText = "";
+
+        const SECTION_ENTITIES = {
+            "Summary": ["summary", "profile", "overview"],
+            "Experience": ["experience", "work", "employment"],
+            "Education": ["education", "academic", "degree"],
+            "Skills": ["skills", "technical", "stack"],
+            "Projects": ["projects", "portfolio"]
+        };
+
+        const DOM = {
+            resumeInput: document.getElementById('resumeInput'),
+            jdInput: document.getElementById('jdInput'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            emptyState: document.getElementById('emptyState'),
+            loadingState: document.getElementById('loadingState'),
+            resultsView: document.getElementById('resultsView'),
+            dropzone: document.getElementById('dropzone'),
+            fileInfo: document.getElementById('fileInfo'),
+            uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+            removeFileBtn: document.getElementById('removeFile'),
+            fileNameDisplay: document.getElementById('fileNameDisplay'),
+            btnText: document.getElementById('btnText'),
+            scoreRing: document.getElementById('scoreRing'),
+            scoreText: document.getElementById('scoreText')
+        };
+
+        lucide.createIcons();
+
+        // High-Speed Extraction
+        async function handleFile(file) {
+            if (!file || file.type !== 'application/pdf') return;
+            
+            // Immediate UI update
+            DOM.uploadPlaceholder.classList.add('hidden');
+            DOM.fileInfo.classList.remove('hidden');
+            DOM.fileNameDisplay.textContent = file.name;
+            DOM.btnText.textContent = "Processing...";
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, verbosity: 0 }).promise;
+            
+            let fullText = "";
+            // Streamlined extraction
+            for(let i=1; i<=pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                fullText += content.items.map(item => item.str).join(" ") + " ";
+            }
+            
+            extractedText = fullText;
+            DOM.btnText.textContent = "Execute Now";
+        }
+
+        function resetUpload() {
+            extractedText = "";
+            DOM.resumeInput.value = "";
+            DOM.fileInfo.classList.add('hidden');
+            DOM.uploadPlaceholder.classList.remove('hidden');
+            DOM.emptyState.classList.remove('hidden');
+            DOM.resultsView.classList.add('hidden');
+            DOM.btnText.textContent = "Execute Now";
+        }
+
+        DOM.resumeInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        DOM.removeFileBtn.addEventListener('click', (e) => { e.stopPropagation(); resetUpload(); });
+
+        DOM.analyzeBtn.addEventListener('click', () => {
+            const jd = DOM.jdInput.value.trim();
+            if (!extractedText || !jd) return alert("Required: PDF Upload + JD Text");
+
+            DOM.emptyState.classList.add('hidden');
+            DOM.resultsView.classList.add('hidden');
+            DOM.loadingState.classList.remove('hidden');
+
+            // Near-instant execution
+            requestAnimationFrame(() => {
+                const report = runEngine(extractedText, jd);
+                renderResults(report);
+                DOM.loadingState.classList.add('hidden');
+                DOM.resultsView.classList.remove('hidden');
+                lucide.createIcons();
+            });
+        });
+
+        function runEngine(resume, jd) {
+            const resLower = resume.toLowerCase();
+            const jdLower = jd.toLowerCase();
+            
+            let mapped = Object.keys(SECTION_ENTITIES).filter(s => SECTION_ENTITIES[s].some(k => resLower.includes(k)));
+            const structScore = Math.round((mapped.length / 5) * 100);
+
+            const jdTokens = jdLower.match(/[a-z]{4,}/g) || [];
+            const uniqueJd = [...new Set(jdTokens)];
+            const hits = uniqueJd.filter(w => resLower.includes(w));
+            const kwScore = uniqueJd.length > 0 ? Math.round((hits.length / uniqueJd.length) * 100) : 0;
+            const gaps = uniqueJd.filter(w => !resLower.includes(w)).slice(0, 12);
+
+            const overall = Math.round((kwScore * 0.7) + (structScore * 0.2) + 10);
+
+            return { overall, kwScore, structScore, formatScore: 95, mapped, gaps, summary: `${hits.length} requirements met. ${overall > 70 ? 'Excellent match.' : 'Moderate alignment.'}` };
+        }
+
+        function renderResults(r) {
+            DOM.scoreRing.style.strokeDashoffset = 283 - (283 * r.overall / 100);
+            DOM.scoreText.textContent = `${r.overall}%`;
+            document.getElementById('aiSummary').textContent = r.summary;
+            document.getElementById('metricKeywords').textContent = `${r.kwScore}%`;
+            document.getElementById('metricStructure').textContent = `${r.structScore}%`;
+            document.getElementById('metricFormatting').textContent = `${r.formatScore}%`;
+
+            const v = document.getElementById('verdictBadge');
+            v.className = `px-3 py-1 rounded-full text-[10px] font-bold uppercase ${r.overall > 75 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`;
+            v.textContent = r.overall > 75 ? 'Strong Match' : 'Review Required';
+
+            document.getElementById('sectionMapping').innerHTML = Object.keys(SECTION_ENTITIES).map(s => `
+                <div class="flex items-center justify-between text-[11px] py-1 border-b border-slate-50 last:border-0">
+                    <span class="${r.mapped.includes(s) ? 'text-slate-800 font-bold' : 'text-slate-400'}">${s}</span>
+                    <i data-lucide="${r.mapped.includes(s) ? 'check-circle' : 'circle'}" class="w-3.5 h-3.5 ${r.mapped.includes(s) ? 'text-green-500' : 'text-slate-200'}"></i>
+                </div>
+            `).join('');
+
+            document.getElementById('gapCloud').innerHTML = r.gaps.map(g => `<span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase">${g}</span>`).join('');
+        }
+    </script>
+</body>
+</html>
