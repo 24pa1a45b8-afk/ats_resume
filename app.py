@@ -1,8 +1,7 @@
 import os
 import streamlit as st
 import PyPDF2
-from google import genai
-
+import google.generativeai as genai
 # ==============================
 # CONFIG
 # ==============================
@@ -160,3 +159,4 @@ if st.button("Analyze Resume"):
 
         st.subheader("🎯 ATS Match Result")
         st.write(ats_result)
+
